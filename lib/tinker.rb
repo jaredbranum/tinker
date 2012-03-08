@@ -1,0 +1,2 @@
+class Tinker
+end
