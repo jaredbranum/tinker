@@ -22,11 +22,22 @@ class Tinker
       @socket ||= TCPSocket.open(@server, @port)
       @socket.puts "NICK #{@nick}"
       @socket.puts "USER #{@nick} 0 * : #{@real_name}"
+      listen
     end
 
     def join(channel)
       raise Tinker::Connection::NotConnectedToNetwork unless @socket and @socket.is_a? TCPSocket
       @socket.puts "JOIN #{channel}"
+    end
+
+    def listen
+      raise Tinker::Connection::NotConnectedToNetwork unless @socket and @socket.is_a? TCPSocket
+      until @socket.eof? do
+        message = @socket.gets
+        if (pong = /^PING (.*)$/.match(message))
+          @socket.puts "PONG #{pong[1]}"
+        end
+      end
     end
 
     class InvalidConnection < Exception
